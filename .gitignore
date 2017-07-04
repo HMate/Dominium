@@ -301,3 +301,17 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+#UNREAL
+#=========================
+
+
+Binaries/
+Content/Mannequin/
+Content/StarterContent/
+Content/ThirdPerson/
+Content/ThirdPersonCPP/
+Content/Geometry/
+Intermediate/
+Plugins/*/
+Saved/
