@@ -36,9 +36,6 @@ void ATerrain3DMC::OnConstruction(const FTransform& Transform)
     TArray<FVector> allVertices;
     PoligoniseChunk(allVertices, densities, positions);
 
-
-    //GetPositions(vertices, densities, positions);
-
     TArray<FVector> vertices;
     TArray<int32> indices;
     LoadIndexedVertices(vertices, indices, allVertices);
@@ -53,7 +50,7 @@ void ATerrain3DMC::OnConstruction(const FTransform& Transform)
 }
 
 
-void ATerrain3DMC::GetDensities(TArray<float> &Densities, TArray<FVector> Positions)
+void ATerrain3DMC::GetDensities(TArray<float> &Densities, TArray<FVector> &Positions)
 {
     Densities.Reserve(GridX*GridY*GridZ);
     Positions.Reserve(GridX*GridY*GridZ);
@@ -81,10 +78,6 @@ void ATerrain3DMC::GetDensities(TArray<float> &Densities, TArray<FVector> Positi
 void ATerrain3DMC::PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float> &Densities, const TArray<FVector> &Positions)
 {
     Vertices.Reserve(GridX*GridY*GridZ);
-    float tileSizeX = SizeX / (float)(TileCountX);
-    float tileSizeY = SizeY / (float)(TileCountY);
-    float tileSizeZ = SizeZ / (float)(TileCountZ);
-
     for(auto zIndex = 0; zIndex < GridZ - 1; zIndex++)
     {
         for(auto yIndex = 0; yIndex < GridY - 1; yIndex++)

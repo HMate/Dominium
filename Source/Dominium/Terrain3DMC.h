@@ -43,11 +43,11 @@ public:
     float SizeZ = 100.0f;
 
     UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
-    int TileCountX = 100;
+    int TileCountX = 8;
     UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
-    int TileCountY = 100;
+    int TileCountY = 8;
     UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
-    int TileCountZ = 100;
+    int TileCountZ = 8;
 
 protected:
 
@@ -67,7 +67,7 @@ protected:
 
     void GenerateBlock(int32 pBlockIndex);
     void UpdateBlock(int32 pBlockIndex);
-    void GetDensities(TArray<float> &Densities, TArray<FVector> Positions);
+    void GetDensities(TArray<float> &Densities, TArray<FVector> &Positions);
     void PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float> &Densities, const TArray<FVector> &Positions);
     void LoadIndexedVertices(TArray<FVector> &Vertices, TArray<int32> &Indices, const TArray<FVector> &AllVertex);
 
