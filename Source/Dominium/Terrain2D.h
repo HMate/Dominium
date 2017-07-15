@@ -10,7 +10,7 @@
 
 #include "Terrain2D.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(Terrain, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(Terrain2D, Log, All);
 
 
 UCLASS()
@@ -30,9 +30,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+    // The Random seed
 	UPROPERTY(EditAnywhere, Category = Noise)
 	int mSeed = 22;
 	UPROPERTY(EditAnywhere, Category = Noise)
+        // Frequency of noise
 	float mFrequency = 0.01f;
 
 	UPROPERTY(EditAnywhere, Category = Chunk)

@@ -2,7 +2,7 @@
 
 #include "Terrain2D.h"
 
-DEFINE_LOG_CATEGORY(Terrain);
+DEFINE_LOG_CATEGORY(Terrain2D);
 
 // Sets default values
 ATerrain2D::ATerrain2D()
@@ -18,6 +18,7 @@ ATerrain2D::ATerrain2D()
 	NoiseGenerator->SetNoiseType(ENoiseType::Gradient);
 }
 
+// Runs every time  a proeprty is changed
 void ATerrain2D::OnConstruction(const FTransform& Transform)
 {
 	GridX = TileCountX + 1;
@@ -37,7 +38,7 @@ void ATerrain2D::OnConstruction(const FTransform& Transform)
 	TArray<FColor> vertexColors;
 	TArray<FRuntimeMeshTangent> tangents;
 
-	UE_LOG(Terrain, Log, TEXT("UpdatingMesh ---!!!----"));
+	UE_LOG(Terrain2D, Log, TEXT("UpdatingMesh ---!!!----"));
 	MeshGenerator->CreateMeshSection(0, vertices, Triangles, normals, UV0, vertexColors, tangents, true);
 }
 
