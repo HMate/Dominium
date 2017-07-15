@@ -312,8 +312,12 @@ static struct GRIDCELL{
 
 inline static float ABS(float val)
 {
+#ifdef _MSC_VER
+    return fabsf(val);
+#else
     if(val > 0.0f) return val;
     else return -val;
+#endif // _MSC_VER
 }
 
 /*

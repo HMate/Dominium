@@ -36,18 +36,18 @@ public:
     float mFrequency = 0.01f;
 
     UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
-    float SizeX = 100.0f;
+    float SizeX = 1000.0f;
     UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
-    float SizeY = 100.0f;
+    float SizeY = 1000.0f;
     UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
-    float SizeZ = 100.0f;
+    float SizeZ = 1000.0f;
 
     UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
-    int TileCountX = 8;
+    int TileCountX = 15;
     UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
-    int TileCountY = 8;
+    int TileCountY = 15;
     UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
-    int TileCountZ = 8;
+    int TileCountZ = 15;
 
 protected:
 

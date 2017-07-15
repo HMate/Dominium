@@ -46,10 +46,11 @@ void ATerrain3DMC::OnConstruction(const FTransform& Transform)
     TArray<FRuntimeMeshTangent> tangents;
 
     UE_LOG(Terrain3DMC, Log, TEXT("UpdatingMesh ---!!!----"));
-    MeshGenerator->CreateMeshSection(0, vertices, indices, normals, UV0, vertexColors, tangents, true);
+    if(vertices.Num() > 0)
+        MeshGenerator->CreateMeshSection(0, vertices, indices, normals, UV0, vertexColors, tangents, true);
 }
 
-
+// Negative density is air, positive is ground
 void ATerrain3DMC::GetDensities(TArray<float> &Densities, TArray<FVector> &Positions)
 {
     Densities.Reserve(GridX*GridY*GridZ);
@@ -67,7 +68,9 @@ void ATerrain3DMC::GetDensities(TArray<float> &Densities, TArray<FVector> &Posit
                 float x = tileSizeX*xIndex;
                 float y = tileSizeY*yIndex;
                 float z = tileSizeZ*zIndex;
-                float w = NoiseGenerator->GetGradient(x, y, z);
+                float w0 = FMath::Abs(NoiseGenerator->GetGradient(x, y, z))*2.0f - 1.0f;
+                float w = (-0.1f*z + 0.8f) + w0;
+
                 Positions.Add(FVector(x, y, z));
                 Densities.Add(w);
             }
@@ -108,6 +111,8 @@ void ATerrain3DMC::PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float
                 cell.val[6] = Densities[z1 + y1 + x1];
                 cell.val[7] = Densities[z1 + y1 + x0];
                 TRIANGLE triangles[5];
+                // Polygonise creates cw triangles, and assumes positive isovalues are air
+                // We need ccw triangles, and positive is ground -> kinda like double negate, so they will be good for us as is.
                 uint32 tcount = Polygonise(cell, 0.0f, triangles);
                 for(uint32 t = 0; t < tcount; t++)
                 {
