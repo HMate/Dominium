@@ -299,18 +299,18 @@ const int triTable[256][16] =
 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}};
 
 
-struct TRIANGLE{
+static struct TRIANGLE{
     FVector p[3];
 };
 
-struct GRIDCELL{
+static struct GRIDCELL{
     FVector p[8];
     float val[8];
 } ;
 
 // #define ABS(val) if((val)>0.0f){ return val; }else{ return -val;} 
 
-inline float ABS(float val)
+inline static float ABS(float val)
 {
     if(val > 0.0f) return val;
     else return -val;
@@ -320,7 +320,7 @@ inline float ABS(float val)
    Linearly interpolate the position where an isosurface cuts
    an edge between two vertices, each with their own scalar value
 */
-FVector VertexInterp(float isolevel, FVector p1, FVector p2, float valp1, float valp2)
+static FVector VertexInterp(float isolevel, FVector p1, FVector p2, float valp1, float valp2)
 {
 	float mu;
     FVector p;
@@ -349,7 +349,7 @@ FVector VertexInterp(float isolevel, FVector p1, FVector p2, float valp1, float 
    
    triangle points are stored in clockwise 
 */
-uint32 Polygonise(GRIDCELL grid, float isolevel, TRIANGLE *triangles)
+static uint32 Polygonise(GRIDCELL grid, float isolevel, TRIANGLE *triangles)
 {
     FVector vertlist[12];
 

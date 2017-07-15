@@ -71,19 +71,27 @@ void ATerrain2D::GetPositions(TArray<FVector> &Positions)
 
 void ATerrain2D::LoadIndices(TArray<int32> &Indices)
 {
-	Indices.Reserve(GridX*GridY * 4);
+	Indices.Reserve(GridX*GridY * 6);
 	for (int32 y = 0; y < GridY - 1; y++)
 	{
 		for (int32 x = 0; x < GridX - 1; x++)
 		{
-			int32 y0Index = y*GridX;
-			int32 y1Index = (y + 1)*GridX;
-			Indices.Add(y0Index + x);
-			Indices.Add(y1Index + x);
-			Indices.Add(y0Index + x + 1);
-			Indices.Add(y0Index + x + 1);
-			Indices.Add(y1Index + x);
-			Indices.Add(y1Index + x + 1);
+            int32 x0 = x;
+            int32 x1 = x+1;
+			int32 y0 = y*GridX;
+			int32 y1 = (y + 1)*GridX;
+
+            /* Adding triangles in counter clockwise ordering
+                  x1  ----          <-- ^
+                      |  |          | \ |
+                x0,y0 ---- y1       ¡-->
+            */
+			Indices.Add(y0 + x0);
+			Indices.Add(y1 + x0);
+			Indices.Add(y0 + x1);
+			Indices.Add(y0 + x1);
+			Indices.Add(y1 + x0);
+			Indices.Add(y1 + x1);
 		}
 	}
 }

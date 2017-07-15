@@ -29,27 +29,32 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-    UPROPERTY(EditAnywhere, Category = Noise)
+    UPROPERTY(EditAnywhere, Category = Noise) // The Random seed
     int mSeed = 22;
-    UPROPERTY(EditAnywhere, Category = Noise)
+
+    UPROPERTY(EditAnywhere, Category = Noise) // Frequency of noise
     float mFrequency = 0.01f;
 
-    UPROPERTY(EditAnywhere, Category = Chunk)
+    UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
     float SizeX = 100.0f;
-    UPROPERTY(EditAnywhere, Category = Chunk)
+    UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
     float SizeY = 100.0f;
-    UPROPERTY(EditAnywhere, Category = Chunk)
+    UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
     float SizeZ = 100.0f;
 
-    UPROPERTY(EditAnywhere, Category = Chunk)
+    UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
     int TileCountX = 100;
-    UPROPERTY(EditAnywhere, Category = Chunk)
+    UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
     int TileCountY = 100;
+    UPROPERTY(EditAnywhere, Category = Chunk) // Specifies how many tiles does a chunk consist of
+    int TileCountZ = 100;
 
 protected:
 
+    // How many samples do we take in this chunk. Always should be true: GridN == TileCountN+1
     int GridX;
     int GridY;
+    int GridZ;
 
     FVector LastCameraPos;
 
@@ -62,8 +67,9 @@ protected:
 
     void GenerateBlock(int32 pBlockIndex);
     void UpdateBlock(int32 pBlockIndex);
-    void GetPositions(TArray<FVector> &Positions);
-    void LoadIndices(TArray<int32> &Indices);
+    void GetDensities(TArray<float> &Densities, TArray<FVector> Positions);
+    void PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float> &Densities, const TArray<FVector> &Positions);
+    void LoadIndexedVertices(TArray<FVector> &Vertices, TArray<int32> &Indices, const TArray<FVector> &AllVertex);
 
     virtual void OnConstruction(const FTransform& Transform) override;
 
