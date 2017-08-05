@@ -16,6 +16,7 @@ ATerrain2D::ATerrain2D()
 
 	NoiseGenerator = CreateDefaultSubobject<UFastNoise>(TEXT("NoiseGenerator"));
 	NoiseGenerator->SetNoiseType(ENoiseType::Gradient);
+
 }
 
 // Runs every time  a proeprty is changed
@@ -23,6 +24,8 @@ void ATerrain2D::OnConstruction(const FTransform& Transform)
 {
 	GridX = TileCountX + 1;
 	GridY = TileCountY + 1;
+    APlayerController* controller = GetWorld()->GetFirstPlayerController();
+    UE_LOG(Terrain2D, Log, TEXT("controller: %d"), controller);
 
 	NoiseGenerator->SetSeed(mSeed);
 	NoiseGenerator->SetFrequency(mFrequency);

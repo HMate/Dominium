@@ -133,7 +133,7 @@ void ATerrain3DMC::LoadIndexedVertices(TArray<FVector> &Vertices, TArray<int32> 
     for(auto v : AllVertex)
     {
         // OPTIMIZATION: lookup for stored vertices might be faster with TMap?
-        auto vindex = Vertices.IndexOfByPredicate([v](auto vx) { 
+        auto vindex = Vertices.IndexOfByPredicate([&v](auto vx) { 
             return v.Equals(vx); 
         });
         if(vindex == INDEX_NONE)

@@ -30,6 +30,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+    UPROPERTY(EditAnywhere, Category = Terrain) // Chunks will be generated around this object
+    UObject* GenerationCenter;
+
 	UPROPERTY(EditAnywhere, Category = Noise) // The Random seed
 	int mSeed = 22;
 
