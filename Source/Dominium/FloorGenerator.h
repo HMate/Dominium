@@ -18,17 +18,24 @@ public:
 
     UPROPERTY(VisibleAnywhere, Category = Generator)
     UStaticMeshComponent *FloorMesh;
-    UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = Generator)
+    UPROPERTY(VisibleAnywhere, Category = Generator)
+    UStaticMeshComponent *FloorMesh2;
+    UPROPERTY(EditAnywhere, Category = Generator)
     UStaticMesh * FloorMeshAsset;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+
+    UStaticMeshComponent *ActiveFloorMesh;
+    UStaticMeshComponent *PassiveFloorMesh;
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	
+protected:
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
+
+    bool IsOverlapping(const FVector& iPos, const FVector& iBounds, const FVector& iTargetPoint);
 	
 };

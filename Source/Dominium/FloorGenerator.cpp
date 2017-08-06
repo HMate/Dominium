@@ -21,14 +21,21 @@ AFloorGenerator::AFloorGenerator()
 
     FloorMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMesh"));
     FloorMesh->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+    FloorMesh2 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("FloorMesh2"));
+    FloorMesh2->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+    ActiveFloorMesh = FloorMesh;
+    PassiveFloorMesh = FloorMesh2;
+    PassiveFloorMesh->SetVisibility(false);
 }
 
 void AFloorGenerator::OnConstruction(const FTransform& Transform)
 {
-    if(FloorMesh != nullptr && FloorMeshAsset != nullptr)
+    if(FloorMesh != nullptr && FloorMesh2 != nullptr && FloorMeshAsset != nullptr)
     {
         UE_LOG(LogTemp, Log, TEXT("attaching floormeshasset"));
         FloorMesh->SetStaticMesh(FloorMeshAsset);
+        FloorMesh2->SetStaticMesh(FloorMeshAsset);
     }
     else
     {
@@ -48,50 +55,64 @@ void AFloorGenerator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    if(FloorMesh == nullptr || FloorMesh2 == nullptr)
+        return;
+
     auto playerController = GetWorld()->GetFirstPlayerController();
     auto p = playerController->GetPawn();
-    if(p != nullptr)
+    if(p == nullptr)
+        return;
+    
+    auto loc = p->GetActorLocation();
+
+    FVector min, max;
+    FloorMesh->GetLocalBounds(min, max);
+    FVector activeFloorLoc = ActiveFloorMesh->GetComponentLocation();
+
+    if(!IsOverlapping(activeFloorLoc, max, loc))
     {
-        auto loc = p->GetActorLocation();
+        FVector newloc = activeFloorLoc;
+        newloc.Z = 0.0f;
 
-        // UE_LOG(LogTemp, Log, TEXT("location of player: %f, %f, %f"), loc.X, loc.Y, loc.Z);
-
-        if(FloorMesh != nullptr)
+        //Do they overlap?
+        int maxIterCount = 20;
+        int iterCount = 0;
+        while(!IsOverlapping(newloc, max, loc) && (iterCount < maxIterCount))
         {
-            FVector min, max;
-            FloorMesh->GetLocalBounds(min, max);
-            FVector currentloc = FloorMesh->GetComponentLocation();
-            FVector newloc = currentloc;
-            newloc.Z = 0.0f;
+            iterCount++;
 
-            //Do they overlap?
-            int maxIterCount = 20;
-            int iterCount = 0;
-            bool xOverlap = newloc.X < loc.X && newloc.X + max.X > loc.X;
-            bool yOverlap = newloc.Y < loc.Y && newloc.Y + max.Y > loc.Y;
-            while((!xOverlap || !yOverlap) && (iterCount < maxIterCount))
-            {
-                iterCount++;
+            if(loc.X < newloc.X)
+                newloc.X -= max.X;
+            else if(loc.X > newloc.X + max.X)
+                newloc.X += max.X;
+            if(loc.Y < newloc.Y)
+                newloc.Y -= max.Y;
+            else if(loc.Y > newloc.Y + max.Y)
+                newloc.Y += max.Y;
+        }
 
-                if(loc.X < newloc.X)
-                    newloc.X -= max.X;
-                else if(loc.X > newloc.X+max.X)
-                    newloc.X += max.X;
-                if(loc.Y < newloc.Y)
-                    newloc.Y -= max.Y;
-                else if(loc.Y > newloc.Y+max.Y)
-                    newloc.Y += max.Y;             
-
-                xOverlap = newloc.X < loc.X && newloc.X + max.X > loc.X;
-                yOverlap = newloc.Y < loc.Y && newloc.Y + max.Y > loc.Y;
-            }
-
-            UE_LOG(LogTemp, Log, TEXT("bounds of FloorMesh: min: %f, %f, %f, max: %f, %f, %f"), min.X, min.Y, min.Z, max.X, max.Y, max.Z);
+        bool needsNewPlace = (iterCount > 0);
+        if(needsNewPlace)
+        {
             UE_LOG(LogTemp, Log, TEXT("location of player: %f, %f, %f"), loc.X, loc.Y, loc.Z);
-            UE_LOG(LogTemp, Log, TEXT("location of FloorMesh: %f, %f, %f"), newloc.X, newloc.Y, newloc.Z);
+            UE_LOG(LogTemp, Log, TEXT("location of FloorMesh2: %f, %f, %f"), newloc.X, newloc.Y, newloc.Z);
             //UE_LOG(LogTemp, Log, TEXT("location of relloc: %f, %f, %f"), relloc.X, relloc.Y, relloc.Z);
-            FloorMesh->SetWorldLocation(newloc);
+            PassiveFloorMesh->SetVisibility(true);
+            PassiveFloorMesh->SetWorldLocation(newloc);
+
+            auto temp = PassiveFloorMesh;
+            PassiveFloorMesh = ActiveFloorMesh;
+            ActiveFloorMesh = temp;
+
+            PassiveFloorMesh->SetVisibility(false);
         }
     }
+     
 }
 
+bool AFloorGenerator::IsOverlapping(const FVector& iPos, const FVector& iBounds, const FVector& iTargetPoint)
+{
+    bool xOverlap = iPos.X < iTargetPoint.X && (iPos.X + iBounds.X) > iTargetPoint.X;
+    bool yOverlap = iPos.Y < iTargetPoint.Y && (iPos.Y + iBounds.Y) > iTargetPoint.Y;
+    return xOverlap && yOverlap;
+}
