@@ -94,8 +94,8 @@ void AFloorGenerator::Tick(float DeltaTime)
         bool needsNewPlace = (iterCount > 0);
         if(needsNewPlace)
         {
-            UE_LOG(LogTemp, Log, TEXT("location of player: %f, %f, %f"), loc.X, loc.Y, loc.Z);
-            UE_LOG(LogTemp, Log, TEXT("location of FloorMesh2: %f, %f, %f"), newloc.X, newloc.Y, newloc.Z);
+            //UE_LOG(LogTemp, Log, TEXT("location of player: %f, %f, %f"), loc.X, loc.Y, loc.Z);
+            //UE_LOG(LogTemp, Log, TEXT("location of FloorMesh2: %f, %f, %f"), newloc.X, newloc.Y, newloc.Z);
             //UE_LOG(LogTemp, Log, TEXT("location of relloc: %f, %f, %f"), relloc.X, relloc.Y, relloc.Z);
             PassiveFloorMesh->SetVisibility(true);
             PassiveFloorMesh->SetWorldLocation(newloc);

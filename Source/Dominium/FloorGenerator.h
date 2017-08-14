@@ -12,9 +12,6 @@ class DOMINIUM_API AFloorGenerator : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	AFloorGenerator();
-    virtual void OnConstruction(const FTransform& Transform);
 
     UPROPERTY(VisibleAnywhere, Category = Generator)
     UStaticMeshComponent *FloorMesh;
@@ -28,7 +25,10 @@ protected:
     UStaticMeshComponent *ActiveFloorMesh;
     UStaticMeshComponent *PassiveFloorMesh;
 
-public:	
+public:
+    // Sets default values for this actor's properties
+    AFloorGenerator();
+    virtual void OnConstruction(const FTransform& Transform);
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
