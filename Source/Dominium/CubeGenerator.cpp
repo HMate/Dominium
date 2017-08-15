@@ -18,7 +18,7 @@ ACubeGenerator::ACubeGenerator()
     RootComponent = SceneComponent;
 
 
-    static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/StarterContent/Props/Materials/M_StatueGlass.M_StatueGlass'"));
+    static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'"));
     UMaterial* cubeMaterial;
 
     if(Material.Object != NULL)
