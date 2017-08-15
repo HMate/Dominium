@@ -16,8 +16,7 @@ ACubeGenerator::ACubeGenerator()
     USceneComponent* SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Component"));
     SceneComponent->SetWorldLocation(FVector(0.0, 0.0, 0.0));
     RootComponent = SceneComponent;
-
-
+    
     static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'"));
     UMaterial* cubeMaterial;
 
@@ -71,5 +70,22 @@ void ACubeGenerator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    for(int i = 0; i < CubeCount; i++)
+    {
+        auto cube = CubesMeshes[i];
+        auto mesh = cube->GetStaticMesh();
+
+        FVector min, max;
+        cube->GetLocalBounds(min, max);
+
+        FVector scale = cube->GetComponentScale();
+        FVector pos = cube->GetComponentLocation();
+        FVector worldMin, worldMax;
+        worldMin = pos + min*scale;
+        worldMax = pos + max*scale;
+
+        UE_LOG(LogTemp, Warning, TEXT("Number %d bounds min: %s, max: %s, pos: %s"), i, *worldMin.ToString(), *worldMax.ToString(), *pos.ToString());
+
+    }
 }
 

@@ -8,6 +8,7 @@
 #include "UnrealFastNoisePlugin/Public/FastNoise/FastNoise.h"
 #include "RuntimeMeshComponent.h"
 
+// .generated.h needs to be the last include in the header!
 #include "Terrain3DMC.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(Terrain3DMC, Log, All);
