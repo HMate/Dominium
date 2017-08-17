@@ -30,11 +30,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+    FVector GridPosToLocation(const FGridPos& pos);
+    FGridPos LocationToGridPos(const FVector& center);
+
 protected:
     // Called when the game starts or when spawned
     virtual void BeginPlay() override;
 
-    FGridPos LocationToGridPos(const FVector& center);
-    TArray<FVector> GatherLocationsForCubes(const FGridPos& centerPos);
+    TArray<FGridPos> GatherPositionsForCubes(const FGridPos& centerPos);
 	
 };
