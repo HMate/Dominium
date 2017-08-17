@@ -90,8 +90,10 @@ void ACubeGenerator::Tick(float DeltaTime)
     {
         auto cube = CubesMeshes[i];
         auto mesh = cube->GetStaticMesh();
+        //UE_LOG(LogTemp, Warning, TEXT("Number %d pos: %s"), i, *cubeLocs[i].ToString());
+        cube->SetWorldLocation(cubeLocs[i]);
 
-        FVector min, max;
+        /*FVector min, max;
         cube->GetLocalBounds(min, max);
 
         FVector scale = cube->GetComponentScale();
@@ -108,7 +110,7 @@ void ACubeGenerator::Tick(float DeltaTime)
         float y = (float)((i / CubeDimCount) % CubeDimCount);
         float z = (float)(i / (CubeDimCount*CubeDimCount));
         FVector newloc(firstCubePos.X + x*CubeSize, firstCubePos.Y + y*CubeSize, firstCubePos.Z + z*CubeSize);
-        cube->SetWorldLocation(newloc);
+        cube->SetWorldLocation(newloc);*/
     }
 }
 
@@ -121,6 +123,21 @@ FGridPos ACubeGenerator::LocationToGridPos(const FVector& center)
 
 TArray<FVector> ACubeGenerator::GatherLocationsForCubes(const FGridPos& centerPos)
 {
-    TArray<FVector> positions;
-    return positions;
+    TArray<FVector> cubeLocations;
+    cubeLocations.Empty(CubeCount);
+
+    FGridPos startPos = centerPos - FGridPos(CubeDimCount / 2);
+    for(size_t z = 0; z < CubeDimCount; z++)
+    {
+        for(size_t y = 0; y < CubeDimCount; y++)
+        {
+            for(size_t x = 0; x < CubeDimCount; x++)
+            {
+                FGridPos cubePos = startPos + FGridPos(x, y, z);
+                cubeLocations.Emplace(FVector(cubePos)*CubeSize);
+            }
+        }
+    }
+
+    return cubeLocations;
 }
