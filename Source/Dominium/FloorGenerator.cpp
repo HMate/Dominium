@@ -59,6 +59,9 @@ void AFloorGenerator::Tick(float DeltaTime)
         return;
 
     auto playerController = GetWorld()->GetFirstPlayerController();
+    if(playerController == nullptr)
+        return;
+
     auto p = playerController->GetPawn();
     if(p == nullptr)
         return;

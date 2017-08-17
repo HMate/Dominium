@@ -6,6 +6,10 @@
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 
+#include "Engine/World.h"
+#include "GameFramework/PlayerController.h"
+#include "Camera/PlayerCameraManager.h"
+
 
 // Sets default values
 ACubeGenerator::ACubeGenerator()
@@ -14,7 +18,8 @@ ACubeGenerator::ACubeGenerator()
 	PrimaryActorTick.bCanEverTick = true;
 
     USceneComponent* SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root Component"));
-    SceneComponent->SetWorldLocation(FVector(0.0, 0.0, 0.0));
+    GridOrigo = FVector(0.0, 0.0, 0.0);
+    SceneComponent->SetWorldLocation(GridOrigo);
     RootComponent = SceneComponent;
     
     static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'"));
@@ -41,12 +46,11 @@ ACubeGenerator::ACubeGenerator()
 
             CubesMeshes.Add(CubeMeshComp);
 
-            const float cubeSize = 400.0f;
-            FVector min = (0 - 1.0f*cubeSize)*FVector::OneVector;
+            FVector firstCubePos = (0 - 1.0f*CubeSize)*FVector::OneVector;
             float x = (float)(i % CubeDimCount);
             float y = (float)((i / CubeDimCount) % CubeDimCount);
             float z = (float)(i / (CubeDimCount*CubeDimCount));
-            FVector newloc(min.X+x*cubeSize, min.Y + y*cubeSize, min.Z + z*cubeSize);
+            FVector newloc(firstCubePos.X+x*CubeSize, firstCubePos.Y + y*CubeSize, firstCubePos.Z + z*CubeSize);
             //CubeMeshComp->SetWorldLocation(newloc);
             CubeMeshComp->SetRelativeLocation(newloc);
         }
@@ -70,6 +74,18 @@ void ACubeGenerator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+    // Get the GenerationCenterPoint
+    auto playerController = GetWorld()->GetFirstPlayerController();
+    if(playerController == nullptr)
+        return;
+
+    auto p = playerController->GetPawn();
+    if(p == nullptr)
+        return;
+
+    FVector loc = p->GetActorLocation();
+    TArray<FVector> cubeLocs = GatherLocationsForCubes(LocationToGridPos(loc));
+
     for(int i = 0; i < CubeCount; i++)
     {
         auto cube = CubesMeshes[i];
@@ -80,12 +96,31 @@ void ACubeGenerator::Tick(float DeltaTime)
 
         FVector scale = cube->GetComponentScale();
         FVector pos = cube->GetComponentLocation();
+        
         FVector worldMin, worldMax;
         worldMin = pos + min*scale;
         worldMax = pos + max*scale;
 
-        UE_LOG(LogTemp, Warning, TEXT("Number %d bounds min: %s, max: %s, pos: %s"), i, *worldMin.ToString(), *worldMax.ToString(), *pos.ToString());
+        //UE_LOG(LogTemp, Warning, TEXT("Number %d bounds min: %s, max: %s, pos: %s"), i, *worldMin.ToString(), *worldMax.ToString(), *pos.ToString());
 
+        FVector firstCubePos = loc - ((1.0f*CubeSize)*FVector::OneVector);
+        float x = (float)(i % CubeDimCount);
+        float y = (float)((i / CubeDimCount) % CubeDimCount);
+        float z = (float)(i / (CubeDimCount*CubeDimCount));
+        FVector newloc(firstCubePos.X + x*CubeSize, firstCubePos.Y + y*CubeSize, firstCubePos.Z + z*CubeSize);
+        cube->SetWorldLocation(newloc);
     }
 }
 
+FGridPos ACubeGenerator::LocationToGridPos(const FVector& center)
+{
+    FVector gridLoc = (center / CubeSize) + (0.5f*FVector::OneVector);
+    FGridPos gridPos = FGridPos(FMath::FloorToInt(gridLoc.X), FMath::FloorToInt(gridLoc.Y), FMath::FloorToInt(gridLoc.Z));
+    return gridPos;
+}
+
+TArray<FVector> ACubeGenerator::GatherLocationsForCubes(const FGridPos& centerPos)
+{
+    TArray<FVector> positions;
+    return positions;
+}
