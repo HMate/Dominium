@@ -22,6 +22,8 @@ ACubeGenerator::ACubeGenerator()
     SceneComponent->SetWorldLocation(GridOrigo);
     RootComponent = SceneComponent;
     
+    CubesMeshes.Empty(CubeCount);
+
     static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'"));
     UMaterial* cubeMaterial;
 
@@ -32,6 +34,22 @@ ACubeGenerator::ACubeGenerator()
         for(int i = 0; i < CubeCount; i++)
         {
             FString compName = FString("CubeMesh") + FString::FromInt(i);
+
+            UTerrainVolumetricChunkComponent* volumeComp = CreateDefaultSubobject<UTerrainVolumetricChunkComponent>(FName(*compName));
+
+            CubesMeshes.Add(volumeComp);
+
+            CubeSize = volumeComp->GetSize().X;
+
+            FVector firstCubePos = GridOrigo - FVector(CubeSize);
+            float x = (float)(i % CubeDimCount);
+            float y = (float)((i / CubeDimCount) % CubeDimCount);
+            float z = (float)(i / (CubeDimCount*CubeDimCount));
+            FVector newloc(firstCubePos.X + x*CubeSize, firstCubePos.Y + y*CubeSize, firstCubePos.Z + z*CubeSize);
+            volumeComp->SetWorldLocation(newloc);
+            volumeComp->GenerateBlock();
+
+            /*
             UStaticMeshComponent* CubeMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(FName(*compName));
             CubeMeshComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
             CubeMeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -39,20 +57,18 @@ ACubeGenerator::ACubeGenerator()
             UStaticMesh* CubeMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/Geometry/Meshes/1M_Cube.1M_Cube"));
             CubeMeshComp->SetStaticMesh(CubeMesh);
 
-            CubeMeshComp->SetRelativeScale3D(4.0f*FVector::OneVector);
-
             //UMaterialInstanceDynamic* cubeMaterialDyn = UMaterialInstanceDynamic::Create(cubeMaterial, this);
             CubeMeshComp->SetMaterial(0, cubeMaterial);
-
             CubesMeshes.Add(CubeMeshComp);
 
-            FVector firstCubePos = (0 - 1.0f*CubeSize)*FVector::OneVector;
+
+            FVector firstCubePos = GridOrigo - FVector(CubeSize);
             float x = (float)(i % CubeDimCount);
             float y = (float)((i / CubeDimCount) % CubeDimCount);
             float z = (float)(i / (CubeDimCount*CubeDimCount));
             FVector newloc(firstCubePos.X+x*CubeSize, firstCubePos.Y + y*CubeSize, firstCubePos.Z + z*CubeSize);
-            //CubeMeshComp->SetWorldLocation(newloc);
-            CubeMeshComp->SetRelativeLocation(newloc);
+            CubeMeshComp->SetWorldLocation(newloc);
+            */
         }
     }
     else
@@ -84,31 +100,25 @@ void ACubeGenerator::Tick(float DeltaTime)
         return;
 
     FVector loc = p->GetActorLocation();
-    TArray<FGridPos> cubePositions = GatherPositionsForCubes(LocationToGridPos(loc));
+    TArray<FGridPos> newCubePositions = GatherPositionsForCubes(LocationToGridPos(loc));
 
-    TArray<UStaticMeshComponent*> unusedCubes;
+    TArray<UTerrainVolumetricChunkComponent*> unusedCubes;
     TArray<FGridPos> unfilledPositions;
-    unfilledPositions.Append(cubePositions);
-
+    unfilledPositions.Append(newCubePositions);
+    
     for(size_t i = 0; i < CubeCount; i++)
     {
         auto cube = CubesMeshes[i];
         FGridPos pos = LocationToGridPos(cube->GetComponentLocation());
-        bool stillGoodPos = false;
 
-        for(int j = 0; j < cubePositions.Num(); j++)
-        {
-            FGridPos cubePos = cubePositions[j];
-            if(cubePos == pos)
-            {
-                stillGoodPos = true;
-                unfilledPositions.Remove(cubePos);
-            }
-        }
-
-        if(!stillGoodPos)
+        auto foundCube = newCubePositions.FindByKey(pos);
+        if(foundCube == nullptr)
         {
             unusedCubes.Push(cube);
+        }
+        else
+        {
+            unfilledPositions.Remove(pos);
         }
     }
 
@@ -117,6 +127,7 @@ void ACubeGenerator::Tick(float DeltaTime)
         auto cube = unusedCubes.Pop(false);
         //UE_LOG(LogTemp, Warning, TEXT("Number %d pos: %s"), i, *cubeLocs[i].ToString());
         cube->SetWorldLocation(GridPosToLocation(unfilledPositions[i]));
+        cube->GenerateBlock();
     }
 }
 

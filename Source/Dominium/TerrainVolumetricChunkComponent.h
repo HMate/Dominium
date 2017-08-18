@@ -3,21 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Components/SceneComponent.h"
 
 #include "UnrealFastNoisePlugin/Public/FastNoise/FastNoise.h"
 #include "RuntimeMeshComponent.h"
 
 // .generated.h needs to be the last include in the header!
-#include "Terrain3DMC.generated.h"
+#include "TerrainVolumetricChunkComponent.generated.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(Terrain3DMC, Log, All);
 
-UCLASS()
-class DOMINIUM_API ATerrain3DMC : public AActor
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class DOMINIUM_API UTerrainVolumetricChunkComponent : public USceneComponent
 {
 	GENERATED_BODY()
-	
+
 public:
     UPROPERTY(EditAnywhere, Category = Noise) // The Random seed
     int mSeed = 22;
@@ -51,20 +50,21 @@ protected:
     UFastNoise *NoiseGenerator;
 
 public:
-    // Sets default values for this actor's properties
-    ATerrain3DMC();
+    // Sets default values for this component's properties
+    UTerrainVolumetricChunkComponent();
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+    void GenerateBlock();
+    FVector GetSize();
 
 protected:
-    // Called when the game starts or when spawned
+    // Called when the game starts
     virtual void BeginPlay() override;
-    virtual void OnConstruction(const FTransform& Transform) override;
 
-    void GenerateBlock(int32 pBlockIndex);
-    void UpdateBlock(int32 pBlockIndex);
     void GetDensities(TArray<float> &Densities, TArray<FVector> &Positions);
     void PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float> &Densities, const TArray<FVector> &Positions);
     void LoadIndexedVertices(TArray<FVector> &Vertices, TArray<int32> &Indices, const TArray<FVector> &AllVertex);
-
+		
+	
 };
