@@ -17,6 +17,8 @@ UTerrainVolumetricChunkComponent::UTerrainVolumetricChunkComponent()
 
     NoiseGenerator = CreateDefaultSubobject<UFastNoise>(TEXT("NoiseGenerator"));
     NoiseGenerator->SetNoiseType(ENoiseType::Gradient);
+    NoiseGenerator->SetFractalType(EFractalType::FBM);
+    NoiseGenerator->SetFractalOctaves(5);
 
     GridX = TileCountX + 1;
     GridY = TileCountY + 1;
@@ -46,7 +48,14 @@ void UTerrainVolumetricChunkComponent::GenerateBlock()
 
     //UE_LOG(Terrain3DMC, Log, TEXT("UpdatingMesh ---!!!----"));
     if(vertices.Num() > 0)
+    {
         MeshGenerator->CreateMeshSection(0, vertices, indices, normals, UV0, vertexColors, tangents, true);
+        //MeshGenerator->DoesSectionExist(0);
+    }
+    else
+    {
+        MeshGenerator->ClearMeshSection(0);
+    }
 }
 
 // Negative density is air, positive is ground
@@ -61,6 +70,8 @@ void UTerrainVolumetricChunkComponent::GetDensities(TArray<float> &Densities, TA
     float tileSizeY = SizeY / (float)(TileCountY);
     float tileSizeZ = SizeZ / (float)(TileCountZ);
 
+    float min = 100.0, max = -100.0;
+
     for(auto zIndex = 0; zIndex < GridZ; zIndex++)
     {
         for(auto yIndex = 0; yIndex < GridY; yIndex++)
@@ -70,14 +81,17 @@ void UTerrainVolumetricChunkComponent::GetDensities(TArray<float> &Densities, TA
                 float x = boundsMin.X + tileSizeX*xIndex;
                 float y = boundsMin.Y + tileSizeY*yIndex;
                 float z = boundsMin.Z + tileSizeZ*zIndex;
-                float w0 = FMath::Abs(NoiseGenerator->GetGradient(x, y, z))*2.0f - 1.0f;
-                float w = /*(-0.1f*z + 0.8f) +*/ w0;
+                float w0 = NoiseGenerator->GetGradientFractal(x, y, z);
+                min = ((min < w0) ? min : w0);
+                max = ((max > w0) ? max : w0);
+                float w = (-mZBias*z) + w0;
 
                 Positions.Add(FVector(x, y, z));
                 Densities.Add(w);
             }
         }
     }
+    UE_LOG(LogTemp, Log, TEXT("tile pos %s -- min: %f max: %f"), *boundsMin.ToString(), min, max);
 }
 
 void UTerrainVolumetricChunkComponent::PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float> &Densities, const TArray<FVector> &Positions)

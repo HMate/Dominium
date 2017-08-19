@@ -22,7 +22,10 @@ public:
     int mSeed = 22;
 
     UPROPERTY(EditAnywhere, Category = Noise) // Frequency of noise
-    float mFrequency = 0.01f;
+    float mFrequency = 0.001f;
+
+    UPROPERTY(EditAnywhere, Category = Noise) // Frequency of noise
+    float mZBias = 0.001f;
 
     UPROPERTY(EditAnywhere, Category = Chunk) // Size of terrain chunk in world
     float SizeX = 1000.0f;

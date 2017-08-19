@@ -21,6 +21,12 @@ public:
     const int CubeCount = CubeDimCount*CubeDimCount*CubeDimCount;
     float CubeSize = 400.0f;
 
+
+    UPROPERTY(EditAnywhere, Category = Noise)
+    float mNoiseFrequency = 0.001f;
+    UPROPERTY(EditAnywhere, Category = Noise)
+    float mZBias = 0.001f;
+
 protected:
     TArray<UTerrainVolumetricChunkComponent *> CubesMeshes;
     FVector GridOrigo;
@@ -30,6 +36,7 @@ public:
     ACubeGenerator();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+    virtual void OnConstruction(const FTransform& Transform);
 
     FVector GridPosToLocation(const FGridPos& pos);
     FGridPos LocationToGridPos(const FVector& center);

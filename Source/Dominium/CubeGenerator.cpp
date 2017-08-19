@@ -36,6 +36,8 @@ ACubeGenerator::ACubeGenerator()
             FString compName = FString("CubeMesh") + FString::FromInt(i);
 
             UTerrainVolumetricChunkComponent* volumeComp = CreateDefaultSubobject<UTerrainVolumetricChunkComponent>(FName(*compName));
+            volumeComp->mFrequency = mNoiseFrequency;
+            volumeComp->mZBias = mZBias;
 
             CubesMeshes.Add(volumeComp);
 
@@ -76,6 +78,20 @@ ACubeGenerator::ACubeGenerator()
         UE_LOG(LogTemp, Warning, TEXT("Couldn't load in debug cube material"));
     }
 
+}
+
+void ACubeGenerator::OnConstruction(const FTransform& Transform)
+{
+    for(size_t i = 0; i < CubeCount; i++)
+    {
+        auto cube = CubesMeshes[i];
+        if(cube != nullptr)
+        {
+            cube->mFrequency = mNoiseFrequency;
+            cube->mZBias = mZBias;
+            cube->GenerateBlock();
+        }
+    }
 }
 
 // Called when the game starts or when spawned
