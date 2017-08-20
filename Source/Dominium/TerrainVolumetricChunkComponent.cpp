@@ -15,6 +15,15 @@ UTerrainVolumetricChunkComponent::UTerrainVolumetricChunkComponent()
     MeshGenerator = CreateDefaultSubobject<URuntimeMeshComponent>(TEXT("GeneratedMesh"));
     MeshGenerator->bTickInEditor = true;
 
+    /*static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'"));
+    UMaterial* cubeMaterial;
+
+    if(Material.Object != NULL)
+    {
+        cubeMaterial = (UMaterial*)Material.Object;
+        MeshGenerator->SetMaterial(0, cubeMaterial);
+    }*/
+
     NoiseGenerator = CreateDefaultSubobject<UFastNoise>(TEXT("NoiseGenerator"));
     NoiseGenerator->SetNoiseType(ENoiseType::Gradient);
     NoiseGenerator->SetFractalType(EFractalType::FBM);

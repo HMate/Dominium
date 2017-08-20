@@ -43,7 +43,7 @@ ACubeGenerator::ACubeGenerator()
 
             CubeSize = volumeComp->GetSize().X;
 
-            FVector firstCubePos = GridOrigo - FVector(CubeSize);
+            FVector firstCubePos = GridOrigo - ((CubeDimCount / 2)*FVector(CubeSize));
             float x = (float)(i % CubeDimCount);
             float y = (float)((i / CubeDimCount) % CubeDimCount);
             float z = (float)(i / (CubeDimCount*CubeDimCount));
@@ -82,6 +82,25 @@ ACubeGenerator::ACubeGenerator()
 
 void ACubeGenerator::OnConstruction(const FTransform& Transform)
 {
+    UE_LOG(LogTemp, Warning, TEXT("ACubeGenerator::OnConstruction"));
+#if WITH_EDITOR
+    GridOrigo = this->GetActorLocation();
+    FVector firstCubePos = GridOrigo - ((CubeDimCount/2)*FVector(CubeSize));
+
+    for(size_t i = 0; i < CubeCount; i++)
+    {
+        auto cube = CubesMeshes[i];
+        if(cube != nullptr)
+        {
+            float x = (float)(i % CubeDimCount);
+            float y = (float)((i / CubeDimCount) % CubeDimCount);
+            float z = (float)(i / (CubeDimCount*CubeDimCount));
+            FVector newloc(firstCubePos.X + x*CubeSize, firstCubePos.Y + y*CubeSize, firstCubePos.Z + z*CubeSize);
+            cube->SetWorldLocation(newloc);
+        }
+    }
+#endif
+
     for(size_t i = 0; i < CubeCount; i++)
     {
         auto cube = CubesMeshes[i];
@@ -127,18 +146,21 @@ void ACubeGenerator::Tick(float DeltaTime)
         auto cube = CubesMeshes[i];
         FGridPos pos = LocationToGridPos(cube->GetComponentLocation());
 
-        auto foundCube = newCubePositions.FindByKey(pos);
-        if(foundCube == nullptr)
-        {
-            unusedCubes.Push(cube);
-        }
-        else
+        auto stillNeedCubeAtPosition = (newCubePositions.FindByKey(pos) != nullptr);
+        if(stillNeedCubeAtPosition)
         {
             unfilledPositions.Remove(pos);
         }
+        else
+        {
+            unusedCubes.Push(cube);
+        }
     }
 
-    for(int i = 0; i < unfilledPositions.Num(); i++)
+    if(unfilledPositions.Num() > unusedCubes.Num())
+        UE_LOG(LogTemp, Warning, TEXT("There are more unfilled positions (%d) than unused cubes(%d)"), unfilledPositions.Num(), unusedCubes.Num());
+
+    for(int i = 0; (i < unfilledPositions.Num()) && (unusedCubes.Num() > 0); i++)
     {
         auto cube = unusedCubes.Pop(false);
         //UE_LOG(LogTemp, Warning, TEXT("Number %d pos: %s"), i, *cubeLocs[i].ToString());
@@ -168,9 +190,9 @@ TArray<FGridPos> ACubeGenerator::GatherPositionsForCubes(const FGridPos& centerP
     return positions;
 }
 
-FGridPos ACubeGenerator::LocationToGridPos(const FVector& center)
+FGridPos ACubeGenerator::LocationToGridPos(const FVector& loc)
 {
-    FVector gridLoc = (center / CubeSize) + (0.5f*FVector::OneVector);
+    FVector gridLoc = (loc / CubeSize) + FVector(0.5f);
     FGridPos gridPos = FGridPos(FMath::FloorToInt(gridLoc.X), FMath::FloorToInt(gridLoc.Y), FMath::FloorToInt(gridLoc.Z));
     return gridPos;
 }

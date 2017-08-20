@@ -17,8 +17,10 @@ class DOMINIUM_API ACubeGenerator : public AActor
 	GENERATED_BODY()
 	
 public:
-    const int CubeDimCount = 3;
-    const int CubeCount = CubeDimCount*CubeDimCount*CubeDimCount;
+
+    int CubeDimCount = 5;
+    int CubeCount = CubeDimCount*CubeDimCount*CubeDimCount;
+
     float CubeSize = 400.0f;
 
 
