@@ -18,6 +18,9 @@ public:
     UPROPERTY(EditAnywhere, Category = Generator)
     URuntimeMeshComponent *MeshGenerator;
 
+protected:
+    int32 MeshIndex;
+
 public:
     // Sets default values for this actor's properties
     ADiamondHierarchyTester();
@@ -30,7 +33,6 @@ protected:
     virtual void BeginPlay() override;
     virtual void OnConstruction(const FTransform& Transform) override;
 
-    void AddTetrahedra(TArray<FVector> &Vertices, TArray<int32> &Indices,
-        const FVector& v0, const FVector& v1, const FVector& v2, const FVector& v3);
+    void AddTetrahedra(const FVector& v0, const FVector& v1, const FVector& v2, const FVector& v3);
 	
 };
