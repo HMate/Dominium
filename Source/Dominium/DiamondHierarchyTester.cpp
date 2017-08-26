@@ -2,6 +2,17 @@
 
 #include "DiamondHierarchyTester.h"
 
+//#include "Debug"
+
+TArray<FLinearColor> debugColors = { 
+    { 1.0, 0.0, 0.0 },
+    { 0.0, 1.0, 0.0 },
+    { 0.0, 1.0, 1.0 },
+    { 1.0, 1.0, 0.0 },
+    { 0.0, 1.0, 1.0 },
+    { 1.0, 0.0, 1.0 }
+};
+
 
 // Sets default values
 ADiamondHierarchyTester::ADiamondHierarchyTester()
@@ -11,15 +22,17 @@ ADiamondHierarchyTester::ADiamondHierarchyTester()
 
     MeshGenerator = CreateDefaultSubobject<URuntimeMeshComponent>(TEXT("GeneratedMesh"));
     RootComponent = MeshGenerator;
-
-    static ConstructorHelpers::FObjectFinder<UMaterial> Material(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'"));
-    UMaterial* cubeMaterial;
-
-    if(Material.Object != NULL)
+    
+    UMaterial* cubeMaterial = ConstructorHelpers::FObjectFinderOptional<UMaterial>(TEXT("Material'/Game/Dominium/DebugCubeMaterial.DebugCubeMaterial'")).Get();
+    
+    if(cubeMaterial != NULL)
     {
-        cubeMaterial = (UMaterial*)Material.Object;
-        for(int i=0; i < 6; i++)
-            MeshGenerator->SetMaterial(i, cubeMaterial);
+        for(int i = 0; i < 6; i++)
+        {
+            UMaterialInstanceDynamic *dMat = UMaterialInstanceDynamic::Create(cubeMaterial, this, FName(*(FString("ColoredDebugMat")+FString::FromInt(i))));
+            dMat->SetVectorParameterValue(FName("Color"), debugColors[i]);
+            MeshGenerator->SetMaterial(i, dMat);
+        }
     }
 }
 
