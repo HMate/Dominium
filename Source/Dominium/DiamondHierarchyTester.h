@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "RuntimeMeshComponent.h"
+#include "Terrain/DiamondTetrahedra.h"
+
 #include "DiamondHierarchyTester.generated.h"
 
 
@@ -33,6 +36,4 @@ protected:
     virtual void BeginPlay() override;
     virtual void OnConstruction(const FTransform& Transform) override;
 
-    void AddTetrahedra(const FVector& v0, const FVector& v1, const FVector& v2, const FVector& v3);
-	
 };

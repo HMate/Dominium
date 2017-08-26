@@ -100,7 +100,7 @@ void UTerrainVolumetricChunkComponent::GetDensities(TArray<float> &Densities, TA
             }
         }
     }
-    UE_LOG(LogTemp, Log, TEXT("tile pos %s -- min: %f max: %f"), *boundsMin.ToString(), min, max);
+    //UE_LOG(LogTemp, Log, TEXT("tile pos %s -- min: %f max: %f"), *boundsMin.ToString(), min, max);
 }
 
 void UTerrainVolumetricChunkComponent::PoligoniseChunk(TArray<FVector> &Vertices, const TArray<float> &Densities, const TArray<FVector> &Positions)
