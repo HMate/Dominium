@@ -27,10 +27,11 @@ ADiamondHierarchyTester::ADiamondHierarchyTester()
 void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
 {
     MeshGenerator->ClearAllMeshSections();
-    MeshIndex = 0;
+    m_MeshIndex = 0;
+    m_TetrahedraStore.Empty(MaxTetrahedraCount);
 
-    float cubeSize = 8.0;
-    float sizer = 200.0 / cubeSize;
+    float cubeSize = (float)FMath::Min(64, FMath::Max(1, (1 << FMath::FloorLog2(HierarchyMaxLevel))));
+    float sizer = CubeWorldSize / cubeSize;
 
     //cube looks like this:
     //       7-------6     z^  ^
@@ -50,68 +51,39 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
     FVector v7 = FVector(1.0f, 0.0f, 1.0f) * cubeSize;
 
     TArray<FVector> vertices;
+    vertices.Empty(1000);
     TArray<int32> indices;
+    vertices.Empty(1000);
 
     // v3,v5 is the spine - after that first go left then on right edge
-    DiamondTetrahedra t0 = DiamondTetrahedra(v3, v5, v1, v0);
-    DiamondTetrahedra t1 = DiamondTetrahedra(v3, v5, v2, v1);
-    DiamondTetrahedra t2 = DiamondTetrahedra(v3, v5, v0, v4);
-    DiamondTetrahedra t3 = DiamondTetrahedra(v3, v5, v4, v7);
-    DiamondTetrahedra t4 = DiamondTetrahedra(v3, v5, v7, v6);
-    DiamondTetrahedra t5 = DiamondTetrahedra(v3, v5, v6, v2);
+    m_TetrahedraStore.Emplace(v3, v5, v1, v0);
+    m_TetrahedraStore.Emplace(v3, v5, v2, v1);
+    m_TetrahedraStore.Emplace(v3, v5, v0, v4);
+    m_TetrahedraStore.Emplace(v3, v5, v4, v7);
+    m_TetrahedraStore.Emplace(v3, v5, v7, v6);
+    m_TetrahedraStore.Emplace(v3, v5, v6, v2);
 
-    DiamondTetrahedra t10 = DiamondTetrahedra();
-    DiamondTetrahedra t11 = DiamondTetrahedra();
-    DiamondTetrahedra t12 = DiamondTetrahedra();
-    DiamondTetrahedra t13 = DiamondTetrahedra();
-    DiamondTetrahedra t14 = DiamondTetrahedra();
-    DiamondTetrahedra t15 = DiamondTetrahedra();
-    DiamondTetrahedra t16 = DiamondTetrahedra();
-    DiamondTetrahedra t17 = DiamondTetrahedra();
-    DiamondTetrahedra t18 = DiamondTetrahedra();
-    DiamondTetrahedra t19 = DiamondTetrahedra();
-    DiamondTetrahedra t110 = DiamondTetrahedra();
-    DiamondTetrahedra t111 = DiamondTetrahedra();
+    for(size_t i = 0; i < m_TetrahedraStore.Num(); i++)
+    {
+        auto& t = m_TetrahedraStore[i];
+        if(t.CanBeSplit() && ((m_TetrahedraStore.Num() + 2) < MaxTetrahedraCount))
+        {
+            int t0 = m_TetrahedraStore.Emplace();
+            int t1 = m_TetrahedraStore.Emplace();
+            t.Split(m_TetrahedraStore[t0], m_TetrahedraStore[t1]);
+        }
+        else if((m_TetrahedraStore.Num() + 2) >= MaxTetrahedraCount)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Max Tetrahedra count too low !"));
+            break;
+        }
+        UE_LOG(LogTemp, Log, TEXT("Tetrahedra %d center: %s"), i, *t.GetCentralVertex().ToString());
+    }
 
-    t0.Split(t10, t11);
-    t1.Split(t12, t13);
-    t2.Split(t14, t15);
-    t3.Split(t16, t17);
-    t4.Split(t18, t19);
-    t5.Split(t110, t111);
-
-    t10.Tesselate(vertices, indices, sizer);
-    t11.Tesselate(vertices, indices, sizer);
-    t12.Tesselate(vertices, indices, sizer);
-    t13.Tesselate(vertices, indices, sizer);
-    t14.Tesselate(vertices, indices, sizer);
-    t15.Tesselate(vertices, indices, sizer);
-    t16.Tesselate(vertices, indices, sizer);
-    t17.Tesselate(vertices, indices, sizer);
-    t18.Tesselate(vertices, indices, sizer);
-    t19.Tesselate(vertices, indices, sizer);
-    t110.Tesselate(vertices, indices, sizer);
-    t111.Tesselate(vertices, indices, sizer);
-
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 0 center: %s"), *t0.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 1 center: %s"), *t1.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 2 center: %s"), *t2.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 3 center: %s"), *t3.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 4 center: %s"), *t4.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 5 center: %s"), *t5.GetCentralVertice().ToString());
-
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 10 center: %s"),  *t10.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 11 center: %s"),  *t11.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 12 center: %s"),  *t12.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 13 center: %s"),  *t13.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 14 center: %s"),  *t14.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 15 center: %s"),  *t15.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 16 center: %s"),  *t16.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 17 center: %s"),  *t17.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 18 center: %s"),  *t18.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 19 center: %s"),  *t19.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 110 center: %s"), *t110.GetCentralVertice().ToString());
-    UE_LOG(LogTemp, Log, TEXT("Tetrahedra 111 center: %s"), *t111.GetCentralVertice().ToString());
+    for(size_t i = 0; i < 6; i++)
+    {
+        m_TetrahedraStore[i].Tesselate(vertices, indices, sizer);
+    }
 
     TArray<FVector> normals;
     TArray<FVector2D> UV0;
@@ -120,8 +92,8 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
 
     if(vertices.Num() > 0)
     {
-        MeshGenerator->CreateMeshSection(MeshIndex, vertices, indices, normals, UV0, vertexColors, tangents, true);
-        MeshIndex++;
+        MeshGenerator->CreateMeshSection(m_MeshIndex, vertices, indices, normals, UV0, vertexColors, tangents, true);
+        m_MeshIndex++;
     }
 }
 

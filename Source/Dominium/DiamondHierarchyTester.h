@@ -21,8 +21,18 @@ public:
     UPROPERTY(EditAnywhere, Category = Generator)
     URuntimeMeshComponent *MeshGenerator;
 
+    UPROPERTY(EditAnywhere, Category = Generator)
+    int HierarchyMaxLevel = 4;
+
+    UPROPERTY(EditAnywhere, Category = Generator)
+    int MaxTetrahedraCount = 10000;
+
+    UPROPERTY(EditAnywhere, Category = Generator)
+    float CubeWorldSize = 200.0f;
+
 protected:
-    int32 MeshIndex;
+    int32 m_MeshIndex;
+    TArray<DiamondTetrahedra> m_TetrahedraStore;
 
 public:
     // Sets default values for this actor's properties
