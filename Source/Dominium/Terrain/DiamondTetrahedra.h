@@ -29,12 +29,14 @@ class DiamondTetrahedra
     DiamondTetrahedra* child0 = nullptr;
     DiamondTetrahedra* child1 = nullptr;
 
+    int32 hLevel;
+
 public:
     DiamondTetrahedra::DiamondTetrahedra();
     DiamondTetrahedra(FVector v0, FVector v1, FVector v2, FVector v3);
     ~DiamondTetrahedra();
 
-    DiamondTetrahedra& SetVertices(FVector v0, FVector v1, FVector v2, FVector v3);
+    DiamondTetrahedra& SetVertices(int32 iLevel, FVector v0, FVector v1, FVector v2, FVector v3);
     DiamondTetrahedra& Tesselate(TArray<FVector>& oVertices, TArray<int32>& oIndices, const float iSizer=200.0f);
 
     DiamondTetrahedra::Edge GetEdge(DiamondTetrahedra::Edge::Edgemask iMask);
@@ -48,4 +50,5 @@ public:
     void Split(DiamondTetrahedra& d0, DiamondTetrahedra& d1);
 
     FString ToString();
+    FString ToDetailsString();
 };

@@ -5,6 +5,7 @@ DiamondTetrahedra::DiamondTetrahedra()
 {
     child0 = nullptr;
     child1 = nullptr;
+    hLevel = -1;
 }
 
 DiamondTetrahedra::~DiamondTetrahedra()
@@ -16,11 +17,12 @@ DiamondTetrahedra::~DiamondTetrahedra()
 // Order of vertices doesnt matter
 DiamondTetrahedra::DiamondTetrahedra(FVector v0, FVector v1, FVector v2, FVector v3) : DiamondTetrahedra()
 {
-    SetVertices(v0, v1, v2, v3);
+    SetVertices(0, v0, v1, v2, v3);
 }
 
-DiamondTetrahedra& DiamondTetrahedra::SetVertices(FVector v0, FVector v1, FVector v2, FVector v3)
+DiamondTetrahedra& DiamondTetrahedra::SetVertices(int32 iLevel, FVector v0, FVector v1, FVector v2, FVector v3)
 {
+    hLevel = iLevel;
     v.Empty(4);
     vi.Empty(4);
 
@@ -127,11 +129,16 @@ DiamondTetrahedra::Edge DiamondTetrahedra::GetEdge(DiamondTetrahedra::Edge::Edge
     }
 }
 
+FIntVector ToIntVector(FVector v)
+{
+    return FIntVector(v.X, v.Y, v.Z);
+}
+
 bool DiamondTetrahedra::CanBeSplit()
 {
     // If central vx is not on lattice, we cant split it
     FVector c = GetCentralVertex();
-    FVector truncated = FVector(FIntVector(c.X, c.Y, c.Z));
+    FVector truncated = FVector(ToIntVector(c));
     if(!c.Equals(truncated))
         return false;
 
@@ -157,8 +164,8 @@ void DiamondTetrahedra::Split(DiamondTetrahedra& d0, DiamondTetrahedra& d1)
     DiamondTetrahedra::Edge e = GetLongestEdge();
     DiamondTetrahedra::Edge o = GetOffSpineEdge();
 
-    d0.SetVertices(c, e.v0, o.v0, o.v1);
-    d1.SetVertices(c, e.v1, o.v0, o.v1);
+    d0.SetVertices(hLevel+1, c, e.v0, o.v0, o.v1);
+    d1.SetVertices(hLevel+1, c, e.v1, o.v0, o.v1);
 
     child0 = &d0;
     child1 = &d1;
@@ -174,12 +181,50 @@ FVector DiamondTetrahedra::GetCentralVertex()
 FIntVector DiamondTetrahedra::GetCentralVertexInt()
 {
     FVector cv = GetCentralVertex();
-    FIntVector cvi = FIntVector(cv.X, cv.Y, cv.Z);
+    FIntVector cvi = ToIntVector(cv);
     return cvi;
 }
-
 
 FString DiamondTetrahedra::ToString()
 {
     return FString::Printf(TEXT("Tetrhdr Pos(%s, %s, %s)"), *vi[0].ToString(), *vi[1].ToString(), *vi[2].ToString());
+}
+
+FString printBits(int32 ptr)
+{
+    unsigned char *b = (unsigned char*)&ptr;
+    unsigned char byte;
+    FString result;
+
+    for(int i = 3; i>=0; i--)
+    {
+        for(int j = 7; j >= 0; j--)
+        {
+            byte = (b[i] >> j) & 1;
+            result += FString::Printf(TEXT("%u"), byte);
+        }
+    }
+    return result;
+}
+
+// rightmost set bit index
+int rsb(int x)
+{
+    return (x != 0) ? FMath::FloorLog2(x & -x) : 32;
+}
+
+// is sigma th bit unset
+int ibu(int x, int sigma)
+{
+    return (1 ^ ((x >> sigma) & 1));
+}
+
+FString DiamondTetrahedra::ToDetailsString()
+{
+    auto cvi = GetCentralVertexInt();
+    int sigma = FMath::Min3(rsb(cvi.X), rsb(cvi.Y), rsb(cvi.Z));
+    int diamondClass = ibu(cvi.X, sigma) + ibu(cvi.Y, sigma) + ibu(cvi.Z, sigma);
+    FIntVector theta = FIntVector(((cvi.X >> sigma) & 3), ((cvi.Y >> sigma) & 3), ((cvi.Z >> sigma) & 3));
+    return FString::Printf(TEXT("Level %d\nx %s sigma: %d\ny %s class: %d\nz %s theta: %s)"), 
+        hLevel, *printBits(cvi.X), sigma, *printBits(cvi.Y), diamondClass, *printBits(cvi.Z), *theta.ToString());
 }

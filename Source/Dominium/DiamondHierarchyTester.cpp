@@ -80,7 +80,7 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
 
         if(t.CanBeSplit())
         {
-            UE_LOG(LogTemp, Log, TEXT("Tetrahedra %d (%s) INT center: %s"), i, *t.ToString(), *t.GetCentralVertexInt().ToString());
+            UE_LOG(LogTemp, Log, TEXT("Tetrahedra %d (%s) INT center: %s\n%s"), i, *t.ToString(), *t.GetCentralVertexInt().ToString(), *t.ToDetailsString());
         }
     }
 
