@@ -66,7 +66,7 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
     for(size_t i = 0; i < m_TetrahedraStore.Num(); i++)
     {
         auto& t = m_TetrahedraStore[i];
-        if(t.CanBeSplit() && ((m_TetrahedraStore.Num() + 2) < MaxTetrahedraCount))
+        if(t.CanBeSplit() && (!t.AlreadySplit()) && ((m_TetrahedraStore.Num() + 2) < MaxTetrahedraCount))
         {
             int t0 = m_TetrahedraStore.Emplace();
             int t1 = m_TetrahedraStore.Emplace();
@@ -77,7 +77,11 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
             UE_LOG(LogTemp, Warning, TEXT("Max Tetrahedra count too low !"));
             break;
         }
-        UE_LOG(LogTemp, Log, TEXT("Tetrahedra %d center: %s"), i, *t.GetCentralVertex().ToString());
+
+        if(t.CanBeSplit())
+        {
+            UE_LOG(LogTemp, Log, TEXT("Tetrahedra %d (%s) INT center: %s"), i, *t.ToString(), *t.GetCentralVertexInt().ToString());
+        }
     }
 
     for(size_t i = 0; i < 6; i++)

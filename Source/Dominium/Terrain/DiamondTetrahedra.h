@@ -38,10 +38,14 @@ public:
     DiamondTetrahedra& Tesselate(TArray<FVector>& oVertices, TArray<int32>& oIndices, const float iSizer=200.0f);
 
     DiamondTetrahedra::Edge GetEdge(DiamondTetrahedra::Edge::Edgemask iMask);
-    DiamondTetrahedra::Edge DiamondTetrahedra::GetLongestEdge();
-    FVector DiamondTetrahedra::GetCentralVertex();
+    DiamondTetrahedra::Edge GetLongestEdge();
+    FVector GetCentralVertex();
+    FIntVector GetCentralVertexInt();
     DiamondTetrahedra::Edge GetOffSpineEdge();
 
-    bool DiamondTetrahedra::CanBeSplit();
+    bool CanBeSplit();
+    bool AlreadySplit();
     void Split(DiamondTetrahedra& d0, DiamondTetrahedra& d1);
+
+    FString ToString();
 };

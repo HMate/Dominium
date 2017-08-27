@@ -135,13 +135,16 @@ bool DiamondTetrahedra::CanBeSplit()
     if(!c.Equals(truncated))
         return false;
 
-    // If already splitted, dont split it
-    if(child0 != nullptr && child1 != nullptr)
-        return false;
-
     // TODO: Really it can only be splitted if every tetrahedra in its the diamond is can be split
     // if(MyDiamond->HasEveryTetrahedra()) is true
     return true;
+}
+
+bool DiamondTetrahedra::AlreadySplit()
+{
+    if(child0 != nullptr && child1 != nullptr)
+        return true;
+    return false;
 }
 
 void DiamondTetrahedra::Split(DiamondTetrahedra& d0, DiamondTetrahedra& d1)
@@ -168,4 +171,15 @@ FVector DiamondTetrahedra::GetCentralVertex()
     return cv;
 }
 
+FIntVector DiamondTetrahedra::GetCentralVertexInt()
+{
+    FVector cv = GetCentralVertex();
+    FIntVector cvi = FIntVector(cv.X, cv.Y, cv.Z);
+    return cvi;
+}
 
+
+FString DiamondTetrahedra::ToString()
+{
+    return FString::Printf(TEXT("Tetrhdr Pos(%s, %s, %s)"), *vi[0].ToString(), *vi[1].ToString(), *vi[2].ToString());
+}
