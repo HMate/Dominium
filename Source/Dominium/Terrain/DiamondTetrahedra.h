@@ -2,6 +2,27 @@
 
 #include "CoreMinimal.h"
 
+struct DiamondLookupIndexEntry
+{
+    static const int offsetMaxSize = 32;
+
+    FIntVector diamondType;
+    FIntVector address;
+
+    int offsetSize;
+    FIntVector offsets[DiamondLookupIndexEntry::offsetMaxSize];
+
+public:
+    DiamondLookupIndexEntry(const FIntVector& diamondType, const FIntVector& iAddress);
+
+    void AddOffset(const FIntVector& iOffset);
+    void AddNormalizedOffset(const FIntVector& iOffset);
+    void Merge(const DiamondLookupIndexEntry &iOther);
+
+    bool HasSameDiamondType(const DiamondLookupIndexEntry& other);
+    FString DiamondLookupIndexEntry::ToDetailsString();
+};
+
 class DiamondTetrahedra
 {
     struct Edge
@@ -44,7 +65,10 @@ public:
     FVector GetCentralVertex();
     FIntVector GetCentralVertexInt();
     DiamondTetrahedra::Edge GetOffSpineEdge();
+    FIntVector GetDiamondIndex();
+    DiamondLookupIndexEntry GetLookupIndexEntry();
 
+    bool IsCentralVertexOnGrid();
     bool CanBeSplit();
     bool AlreadySplit();
     void Split(DiamondTetrahedra& d0, DiamondTetrahedra& d1);

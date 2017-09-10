@@ -55,6 +55,8 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
     TArray<int32> indices;
     vertices.Empty(1000);
 
+    TArray<DiamondLookupIndexEntry> indexEntries;
+
     // v3,v5 is the spine - after that first go left then on right edge
     m_TetrahedraStore.Emplace(v3, v5, v1, v0);
     m_TetrahedraStore.Emplace(v3, v5, v2, v1);
@@ -81,7 +83,45 @@ void ADiamondHierarchyTester::OnConstruction(const FTransform& Transform)
         if(t.CanBeSplit())
         {
             UE_LOG(LogTemp, Log, TEXT("Tetrahedra %d (%s) INT center: %s\n%s"), i, *t.ToString(), *t.GetCentralVertexInt().ToString(), *t.ToDetailsString());
+
+            // collect hierarchy indices
+            auto indexEntry = t.GetLookupIndexEntry();
+            DiamondLookupIndexEntry *found = indexEntries.FindByPredicate([&indexEntry](DiamondLookupIndexEntry& e) { return indexEntry.HasSameDiamondType(e); });
+            if(found != nullptr)
+            {
+                found->Merge(indexEntry);
+            }
+            else
+            {
+                indexEntries.Add(indexEntry);
+            }
         }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("------------INDICES:----------"));
+
+    indexEntries.Sort([](const DiamondLookupIndexEntry& left, const DiamondLookupIndexEntry& right) {
+        // <
+        const FIntVector& ld = left.diamondType;
+        const FIntVector& rd = right.diamondType;
+        if(ld.X != rd.X)
+        {
+            return ld.X < rd.X;
+        }
+        else if(ld.Y != rd.Y)
+        {
+            return ld.Y < rd.Y;
+        }
+        else
+        {
+            return ld.Z < rd.Z;
+        }
+    });
+
+
+    for(size_t i = 0; i < indexEntries.Num(); i++)
+    {
+        UE_LOG(LogTemp, Log, TEXT("%s"), *indexEntries[i].ToDetailsString());
     }
 
     for(size_t i = 0; i < 6; i++)

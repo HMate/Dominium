@@ -137,13 +137,19 @@ FIntVector ToIntVector(FVector v)
 bool DiamondTetrahedra::CanBeSplit()
 {
     // If central vx is not on lattice, we cant split it
+    bool isGrid = IsCentralVertexOnGrid();
+
+    // TODO: Really it can only be splitted if every tetrahedra in its the diamond is can be split
+    // if(MyDiamond->HasEveryTetrahedra()) is true
+    return isGrid;
+}
+
+bool DiamondTetrahedra::IsCentralVertexOnGrid()
+{
     FVector c = GetCentralVertex();
     FVector truncated = FVector(ToIntVector(c));
     if(!c.Equals(truncated))
         return false;
-
-    // TODO: Really it can only be splitted if every tetrahedra in its the diamond is can be split
-    // if(MyDiamond->HasEveryTetrahedra()) is true
     return true;
 }
 
@@ -187,7 +193,7 @@ FIntVector DiamondTetrahedra::GetCentralVertexInt()
 
 FString DiamondTetrahedra::ToString()
 {
-    return FString::Printf(TEXT("Tetrhdr Pos(%s, %s, %s)"), *vi[0].ToString(), *vi[1].ToString(), *vi[2].ToString());
+    return FString::Printf(TEXT("Tetrhdr Pos((%s) (%s) (%s) (%s))"), *vi[0].ToString(), *vi[1].ToString(), *vi[2].ToString(), *vi[3].ToString());
 }
 
 FString printBits(int32 ptr)
@@ -219,12 +225,101 @@ int ibu(int x, int sigma)
     return (1 ^ ((x >> sigma) & 1));
 }
 
+//diamondIndex: can be used as an index in the diamond hierarchy for the diamond vertices
+FIntVector DiamondTetrahedra::GetDiamondIndex()
+{
+    auto cvi = GetCentralVertexInt();
+    // sigma: index of rightmost 1 in byte representation of center
+    // also gives the depth level of the diamond in the heirarchy
+    int sigma = FMath::Min3(rsb(cvi.X), rsb(cvi.Y), rsb(cvi.Z));
+    FIntVector diamondIndex = FIntVector(((cvi.X >> sigma) & 3), ((cvi.Y >> sigma) & 3), ((cvi.Z >> sigma) & 3));
+    return diamondIndex;
+}
+
 FString DiamondTetrahedra::ToDetailsString()
 {
     auto cvi = GetCentralVertexInt();
+    // sigma: index of rightmost 1 in byte representation of center
+    // also gives the depth level of the diamond in the heirarchy
     int sigma = FMath::Min3(rsb(cvi.X), rsb(cvi.Y), rsb(cvi.Z));
-    int diamondClass = ibu(cvi.X, sigma) + ibu(cvi.Y, sigma) + ibu(cvi.Z, sigma);
-    FIntVector theta = FIntVector(((cvi.X >> sigma) & 3), ((cvi.Y >> sigma) & 3), ((cvi.Z >> sigma) & 3));
+    // diamondType: {0, 1, 2}, number of unset bits at sigmath bit of every coordinate
+    int diamondType = ibu(cvi.X, sigma) + ibu(cvi.Y, sigma) + ibu(cvi.Z, sigma);
+    FIntVector theta = GetDiamondIndex();
     return FString::Printf(TEXT("Level %d\nx %s sigma: %d\ny %s class: %d\nz %s theta: %s)"), 
-        hLevel, *printBits(cvi.X), sigma, *printBits(cvi.Y), diamondClass, *printBits(cvi.Z), *theta.ToString());
+        hLevel, *printBits(cvi.X), sigma, *printBits(cvi.Y), diamondType, *printBits(cvi.Z), *theta.ToString());
+}
+
+DiamondLookupIndexEntry DiamondTetrahedra::GetLookupIndexEntry()
+{
+    auto center = GetCentralVertexInt();
+    DiamondLookupIndexEntry entry = DiamondLookupIndexEntry(GetDiamondIndex(), center);
+
+    for(size_t i = 0; i < vi.Num(); i++)
+    {
+        auto off = vi[i] - center;
+        entry.AddNormalizedOffset(off);
+    }
+    return entry;
+}
+
+
+// --------------------------------------------------------------------------------------------------------------------------------
+
+
+DiamondLookupIndexEntry::DiamondLookupIndexEntry(const FIntVector& diamondType, const FIntVector& iAddress)
+    : diamondType(diamondType), address(iAddress), offsetSize(0)
+{
+}
+
+bool DiamondLookupIndexEntry::HasSameDiamondType(const DiamondLookupIndexEntry& other)
+{
+    return diamondType == other.diamondType;
+}
+
+void DiamondLookupIndexEntry::AddNormalizedOffset(const FIntVector& iOffset)
+{
+    FIntVector norm = iOffset;
+    norm.X = FMath::Clamp(norm.X, -1, 1);
+    norm.Y = FMath::Clamp(norm.Y, -1, 1);
+    norm.Z = FMath::Clamp(norm.Z, -1, 1);
+    AddOffset(norm);
+}
+
+void DiamondLookupIndexEntry::AddOffset(const FIntVector& iOffset)
+{
+    if(offsetSize < DiamondLookupIndexEntry::offsetMaxSize)
+    {
+        offsets[offsetSize] = iOffset;
+        offsetSize++;
+    }
+    //else
+    //{
+    //    checkf(false, TEXT("DiamondLookupIndexEntry offset array too small"));
+    //}
+}
+
+void DiamondLookupIndexEntry::Merge(const DiamondLookupIndexEntry &iOther)
+{
+    for(size_t i = 0; i < iOther.offsetSize; i++)
+    {
+        bool has = false;
+        for(size_t j = 0; j < offsetSize; j++)
+        {
+            if(offsets[j] == iOther.offsets[i])
+                has = true;
+        }
+        if(!has)
+            AddOffset(iOther.offsets[i]);
+    }
+}
+
+FString DiamondLookupIndexEntry::ToDetailsString()
+{
+    FString offsetString;
+    for(size_t i = 0; i < offsetSize; i++)
+    {
+        offsetString += FString::Printf(TEXT("\n (%s)"), *offsets[i].ToString());
+    }
+    return FString::Printf(TEXT("Type: %s { %s }"),
+        *diamondType.ToString(), *offsetString);
 }
